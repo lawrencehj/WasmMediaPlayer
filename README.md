@@ -30,7 +30,14 @@ git clone https://git.ffmpeg.org/ffmpeg.git
 git clone https://github.com/lawrencehj/WasmMediaPlayer.git
 ```
 ### 4.4 编译
-进入代码目录，执行：
+代码中已包含编译好的wasm，如未对decoder.c进行修改且未对ffmpeg进行重新编译，可直接进入下一节《5. 测试》
+
+如果修改过decoder.c，未重新编译ffmpeg，可在代码目录执行：
+```
+./build_decoder_wasm.sh
+```
+
+如需修改ffmpeg配置，则需修改build_decoder.sh，保存后执行：
 ```
 ./build_decoder.sh
 ```
