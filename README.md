@@ -16,6 +16,7 @@
 在此基础上做了以下扩展：
 1. 增加对Websocket-FLV流的支持
 2. 增加对G.711A（PCM-ALAW）、G.711U（PCM-MULAW）、G.723.1、G.729音频编码格式的支持
+3. 增加对解码后的YUVJ420P图像格式支持
 
 ## 4 编译
 ### 4.1 安装Emscripten
