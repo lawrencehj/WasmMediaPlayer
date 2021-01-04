@@ -712,8 +712,8 @@ ErrorCode openDecoder(int *paramArray, int paramCount, long videoCallback, long 
 
         decoder->avformatContext->pb = ioContext;
         decoder->avformatContext->flags = AVFMT_FLAG_CUSTOM_IO;
-        decoder->avformatContext->probesize = 10 * 1024;
-        decoder->avformatContext->max_analyze_duration = 1 * AV_TIME_BASE;
+        //decoder->avformatContext->probesize = 32 * 1024;
+        //decoder->avformatContext->max_analyze_duration = 1 * AV_TIME_BASE;
 
         r = avformat_open_input(&decoder->avformatContext, NULL, NULL, NULL);
         if (r != 0) {
