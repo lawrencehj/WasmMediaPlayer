@@ -10,6 +10,7 @@
 
 ## 3 依赖
 本项目代码使用WASM、FFmpeg、WebGL、Web Audio等组件，主要参考了以下项目：
+
 [基于WASM的H265 Web播放器](https://blog.csdn.net/sonysuqin/article/details/86770715)
 
 在此基础上做了以下扩展：
@@ -46,7 +47,7 @@ http-server -p 8080 .
 http://localhost:8080
 ```
 
-# 6 待优化问题
+## 6 待优化问题
 1. 解码、播放H265时CPU占用相对较高
 2. 对于高码流实时流存在延时逐步加大的问题，拟采用Ring Buffer取代FIFO解决
 3. 代码封装
