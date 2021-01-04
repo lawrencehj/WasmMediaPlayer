@@ -14,7 +14,7 @@ export EXPORTED_FUNCTIONS="[ \
 ]"
 
 echo "Running Emscripten..."
-emcc decoder.c dist/lib/libavformat.a dist/lib/libavcodec.a dist/lib/libavutil.a dist/lib/libswscale.a \
+emcc decoder.c dist/lib/libavformat.a dist/lib/libavcodec.a dist/lib/libavutil.a \
     -O3 \
     -I "dist/include" \
     -s WASM=1 \

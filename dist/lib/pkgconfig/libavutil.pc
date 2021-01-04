@@ -1,14 +1,14 @@
-prefix=/mnt/d/work/open_source/ffmpeg/../WasmVideoPlayer/dist
+prefix=/home/lawrence/git_projects/ffmpeg/../WasmMediaPlayer/dist
 exec_prefix=${prefix}
-libdir=${prefix}/lib
-includedir=${prefix}/include
+libdir=/home/lawrence/git_projects/ffmpeg/../WasmMediaPlayer/dist/lib
+includedir=/home/lawrence/git_projects/ffmpeg/../WasmMediaPlayer/dist/include
 
 Name: libavutil
 Description: FFmpeg utility library
-Version: 55.58.100
+Version: 56.63.100
 Requires: 
 Requires.private: 
 Conflicts:
-Libs: -L${libdir}  -lavutil -lm
+Libs: -L${libdir}  -lavutil -pthread -lm
 Libs.private: 
 Cflags: -I${includedir}

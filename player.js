@@ -73,6 +73,7 @@ function Player() {
     this.logger             = new Logger("Player");
     this.initDownloadWorker();
     this.initDecodeWorker();
+    this.wskt               = null;
 }
 
 Player.prototype.initDownloadWorker = function () {
@@ -435,6 +436,11 @@ Player.prototype.stop = function () {
         this.fetchController.abort();
         this.fetchController = null;
     }
+    
+    if (this.wskt != null) {
+        this.wskt.close();
+    }
+    this.wskt = null;
 
     return ret;
 };
@@ -1114,51 +1120,108 @@ Player.prototype.onStreamDataUnderDecoderIdle = function (length) {
     }
 };
 
+Player.prototype.appendBuffer = function (buffer1, buffer2) {
+    var tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
+    tmp.set(new Uint8Array(buffer1), 0);
+    tmp.set(new Uint8Array(buffer2), buffer1.byteLength);
+    return tmp.buffer;
+};
+
+
 Player.prototype.requestStream = function (url) {
     var self = this;
-    this.fetchController = new AbortController();
-    const signal = this.fetchController.signal;
+    var data = null;
+    if (url.startWith("ws://") || url.startWith("wss://")) {
+        if (this.wskt == null) {
+        	  this.wskt = new WebSocket(url);
+            this.wskt.binaryType = 'arraybuffer';
 
-    fetch(url, {signal}).then(async function respond(response) {
-        const reader = response.body.getReader();
-        reader.read().then(function processData({done, value}) {
-            if (done) {
-                self.logger.logInfo("Stream done.");
-                return;
-            }
+            var self = this;
+            this.wskt.onopen = function(evt) {
+                self.logger.logInfo("Websocket connected.");
+                self.wskt.send('');
+            };
 
-            if (self.playerState != playerStatePlaying) {
-                return;
-            }
+            this.wskt.onerror = function(evt) {
+                self.logger.logError("Websocket connect error " + evt.data);
+            };
 
-            var dataLength = value.byteLength;
-            var offset = 0;
-            if (dataLength > self.fileInfo.chunkSize) {
-                do {
-                    let len = Math.min(self.fileInfo.chunkSize, dataLength);
-                    var data = value.buffer.slice(offset, offset + len);
-                    dataLength -= len;
-                    offset += len;
+            this.wskt.onmessage = function(evt) {
+                if (self.playerState != playerStatePlaying) {
+                    return;
+                }
+                var dataLength = evt.data.byteLength;
+                var offset = 0;
+                if (dataLength > self.fileInfo.chunkSize) {
+                    do {
+                        let len = Math.min(self.fileInfo.chunkSize, dataLength);
+                        data = evt.data.slice(offset, offset + len);
+                        dataLength -= len;
+                        offset += len;
+                        var objData = {
+                            t: kFeedDataReq,
+                            d: data
+                        };
+                        self.decodeWorker.postMessage(objData, [objData.d]);
+                    } while (dataLength > 0)
+                } else {
+                    data = evt.data;
                     var objData = {
                         t: kFeedDataReq,
                         d: data
                     };
                     self.decodeWorker.postMessage(objData, [objData.d]);
-                } while (dataLength > 0)
-            } else {
-                var objData = {
-                    t: kFeedDataReq,
-                    d: value.buffer
-                };
-                self.decodeWorker.postMessage(objData, [objData.d]);
-            }
+                }
+                if (self.decoderState == decoderStateIdle) {
+                    self.onStreamDataUnderDecoderIdle(dataLength);
+                }
+            };
+        }
+    } else {
+        this.fetchController = new AbortController();
+        const signal = this.fetchController.signal;
+        
+        fetch(url, {signal}).then(async function respond(response) {
+            const reader = response.body.getReader();
+            reader.read().then(function processData({done, value}) {
+                if (done) {
+                    self.logger.logInfo("Stream done.");
+                    return;
+                }
+                
+                if (self.playerState != playerStatePlaying) {
+                    return;
+                }
 
-            if (self.decoderState == decoderStateIdle) {
-                self.onStreamDataUnderDecoderIdle(dataLength);
-            }
+                var dataLength = value.byteLength;
+                var offset = 0;
+                if (dataLength > self.fileInfo.chunkSize) {
+                    do {
+                        let len = Math.min(self.fileInfo.chunkSize, dataLength);
+                        var data = value.buffer.slice(offset, offset + len);
+                        dataLength -= len;
+                        offset += len;
+                        var objData = {
+                            t: kFeedDataReq,
+                            d: data
+                        };
+                        self.decodeWorker.postMessage(objData, [objData.d]);
+                    } while (dataLength > 0)
+                } else {
+                    var objData = {
+                        t: kFeedDataReq,
+                        d: value.buffer
+                    };
+                    self.decodeWorker.postMessage(objData, [objData.d]);
+                }
 
-            return reader.read().then(processData);
+                if (self.decoderState == decoderStateIdle) {
+                    self.onStreamDataUnderDecoderIdle(dataLength);
+                }
+
+                return reader.read().then(processData);
+            });
+        }).catch(err => {
         });
-    }).catch(err => {
-    });
+    }
 };

@@ -13,14 +13,11 @@
 <body>
     <div class="container" id="videoPlayer">
         <div class="sideBar">
-            <span class="no-padding">
-                <img src="img/home.png" class="left" id="btnHome" title="Visit My Homepage" onclick="window.open('https://blog.csdn.net/sonysuqin')" />
-            </span>
             <div id="input">
                 <select id="protocol" onchange="onSelectProto()">
+                    <option value="liveFlv">LIVE-FLV</option>
                     <option value="http">HTTP</option>
                     <option value="ws">WS</option>
-                    <option value="httpFlv">HTTP-FLV</option>
                 </select>
                 <input type="text" id="inputUrl" style="width:300px"/>
             </div>
@@ -58,7 +55,6 @@
             </span>
         </div>
     </div>
-    <div id="footer">Copyright &copy; 2019 sonysuqin.All rights reserved.</div>
 
     <script type='text/javascript' src="common.js"></script>
     <script type='text/javascript' src="pcm-player.js"></script>
@@ -66,6 +62,12 @@
     <script type='text/javascript' src="player.js"></script>
     <script type='text/javascript'>
         var defaultProtos = {
+            liveFlv: {
+            	  url: "ws://192.168.0.100:80/rtp/gb_play_44010200491370000100_44010200491370000100.flv",
+                //url: "http://img.ksbbs.com/asset/Mon_1704/15868902d399b87.flv",
+                waitLength : 64 * 1024,
+                stream: true,
+            },
             http: {
                 url: "https://roblin.cn/wasm/video/h265_high.mp4",
                 waitLength : 512 * 1024,
@@ -75,15 +77,10 @@
                 url: "wss://roblin.cn/wss/h265_high.mp4",
                 waitLength : 512 * 1024,
                 stream: false,
-            },
-            httpFlv: {
-                url: "https://data.vod.itc.cn/bee/qf/wasm?tok=e4da89d923e4e2af4d622a0edb717f88827b422a&format=flv&direct=1",
-                waitLength : 512 * 1024,
-                stream: true,
             }
         };
         let inputUrl = document.getElementById("inputUrl");
-        inputUrl.value = defaultProtos["http"]["url"];
+        inputUrl.value = defaultProtos["liveFlv"]["url"];
 
         //Player object.
         self.player = new Player();

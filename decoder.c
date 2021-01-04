@@ -14,6 +14,7 @@ extern "C" {
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libavutil/fifo.h"
+#include "libavutil/imgutils.h"
 //#include "libswscale/swscale.h"
 
 #define MIN(X, Y)  ((X) < (Y) ? (X) : (Y))
@@ -77,7 +78,7 @@ typedef struct WebDecoder {
 WebDecoder *decoder = NULL;
 LogLevel logLevel = kLogLevel_None;
 
-int getAailableDataSize();
+int getAvailableDataSize();
 
 unsigned long getTickCount() {
     struct timespec ts;
@@ -301,7 +302,7 @@ ErrorCode processDecodedVideoFrame(AVFrame *frame) {
             break;
         }
 
-        if (decoder->videoCodecContext->pix_fmt != AV_PIX_FMT_YUV420P) {
+        if (decoder->videoCodecContext->pix_fmt != AV_PIX_FMT_YUV420P && decoder->videoCodecContext->pix_fmt != AV_PIX_FMT_YUVJ420P ) {
             simpleLog("Not YUV420P, but unsupported format %d.", decoder->videoCodecContext->pix_fmt);
             ret = kErrorCode_Invalid_Format;
             break;
@@ -538,7 +539,7 @@ int64_t seekCallback(void *opaque, int64_t offset, int whence) {
             decoder->fileWritePos       = pos;
             req_pos                     = pos;
             ret                         = -1;  // Forcing not to call read at once.
-            decoder->requestCallback(pos, getAailableDataSize());
+            decoder->requestCallback(pos, getAvailableDataSize());
             simpleLog("Will request %lld and return %lld.", pos, ret);
             break;
         }
@@ -549,7 +550,7 @@ int64_t seekCallback(void *opaque, int64_t offset, int whence) {
     //simpleLog("seekCallback return %lld.", ret);
 
     if (decoder != NULL && decoder->requestCallback != NULL) {
-        decoder->requestCallback(req_pos, getAailableDataSize());
+        decoder->requestCallback(req_pos, getAvailableDataSize());
     }
     return ret;
 }
@@ -608,7 +609,7 @@ int writeToFifo(unsigned char *buff, int size) {
     return ret;
 }
 
-int getAailableDataSize() {
+int getAvailableDataSize() {
     int ret = 0;
     do {
         if (decoder == NULL) {
@@ -685,8 +686,8 @@ ErrorCode openDecoder(int *paramArray, int paramCount, long videoCallback, long 
     do {
         simpleLog("Opening decoder.");
 
-        av_register_all();
-        avcodec_register_all();
+        //av_register_all();
+        //avcodec_register_all();
 
         if (logLevel == kLogLevel_All) {
             av_log_set_callback(ffmpegLogCallback);
@@ -711,6 +712,8 @@ ErrorCode openDecoder(int *paramArray, int paramCount, long videoCallback, long 
 
         decoder->avformatContext->pb = ioContext;
         decoder->avformatContext->flags = AVFMT_FLAG_CUSTOM_IO;
+        decoder->avformatContext->probesize = 10 * 1024;
+        decoder->avformatContext->max_analyze_duration = 1 * AV_TIME_BASE;
 
         r = avformat_open_input(&decoder->avformatContext, NULL, NULL, NULL);
         if (r != 0) {
@@ -731,6 +734,7 @@ ErrorCode openDecoder(int *paramArray, int paramCount, long videoCallback, long 
         }
 
         simpleLog("avformat_find_stream_info success.");
+        simpleLog("Number of streams: %d", decoder->avformatContext->nb_streams);
 
         for (i = 0; i < decoder->avformatContext->nb_streams; i++) {
             decoder->avformatContext->streams[i]->discard = AVDISCARD_DEFAULT;
@@ -755,7 +759,7 @@ ErrorCode openDecoder(int *paramArray, int paramCount, long videoCallback, long 
             decoder->videoCodecContext->pix_fmt,
             decoder->videoCodecContext->width,
             decoder->videoCodecContext->height);
-
+            
         r = openCodecContext(
             decoder->avformatContext,
             AVMEDIA_TYPE_AUDIO,
@@ -763,7 +767,7 @@ ErrorCode openDecoder(int *paramArray, int paramCount, long videoCallback, long 
             &decoder->audioCodecContext);
         if (r != 0) {
             ret = kErrorCode_FFmpeg_Error;
-            simpleLog("Open audio codec context failed %d.", ret);
+            simpleLog("Open audio codec context  ed %d.", ret);
             break;
         }
 
@@ -797,10 +801,11 @@ ErrorCode openDecoder(int *paramArray, int paramCount, long videoCallback, long 
         }
         */
         
-        decoder->videoSize = avpicture_get_size(
+        //decoder->videoSize = avpicture_get_size(
+        decoder->videoSize = av_image_get_buffer_size(
             decoder->videoCodecContext->pix_fmt,
             decoder->videoCodecContext->width,
-            decoder->videoCodecContext->height);
+            decoder->videoCodecContext->height, 1);
 
         decoder->videoBufferSize = 3 * decoder->videoSize;
         decoder->yuvBuffer = (unsigned char *)av_mallocz(decoder->videoBufferSize);
@@ -921,7 +926,7 @@ ErrorCode decodeOnePacket() {
             break;
         }
 
-        if (getAailableDataSize() <= 0) {
+        if (getAvailableDataSize() <= 0) {
             ret = kErrorCode_Invalid_State;
             break;
         }
