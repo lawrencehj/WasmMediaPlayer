@@ -22,7 +22,7 @@ extern "C" {
 const int kCustomIoBufferSize = 32 * 1024;
 const int kInitialPcmBufferSize = 128 * 1024;
 const int kDefaultFifoSize = 1 * 1024 * 1024;
-const int kMaxFifoSize = 16 * 1024 * 1024;
+const int kMaxFifoSize = 8 * 1024 * 1024;
 
 typedef enum ErrorCode {
     kErrorCode_Success = 0,
@@ -589,17 +589,30 @@ int writeToFifo(unsigned char *buff, int size) {
 
         int64_t leftSpace = av_fifo_space(decoder->fifo);
         if (leftSpace < size) {
+        	  // Fifo Full
+        	  // Strategy 1: Drop the new trunk
+        	  //simpleLog("Fifo full, Drop this trunk");
+        	  //break;
+        	  
+        	  // Strategy 2: Empty the Fifo
+        	  //av_fifo_reset(decoder->fifo);
+        	  //simpleLog("Fifo full, Empty it");
+        	  //break;
+        	  
+        	  // Strategy 3: Expand the Fifo 
             int growSize = 0;
-            do {
-                leftSpace += decoder->fifoSize;
-                growSize += decoder->fifoSize;
-                decoder->fifoSize += decoder->fifoSize;
-            } while (leftSpace < size);
-            av_fifo_grow(decoder->fifo, growSize);
-
-            simpleLog("Fifo size growed to %d.", decoder->fifoSize);
             if (decoder->fifoSize >= kMaxFifoSize) {
-                simpleLog("[Warn] Fifo size larger than %d.", kMaxFifoSize);
+        	      av_fifo_reset(decoder->fifo);
+                simpleLog("[Warn] Fifo size larger than %d, reset the fifo.", kMaxFifoSize);
+                //break;
+            } else {
+                do {
+                    leftSpace += decoder->fifoSize;
+                    growSize += decoder->fifoSize;
+                    decoder->fifoSize += decoder->fifoSize;
+                } while (leftSpace < size);
+                av_fifo_grow(decoder->fifo, growSize);
+                simpleLog("Fifo size growed to %d.", decoder->fifoSize);
             }
         }
 
