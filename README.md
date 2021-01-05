@@ -20,25 +20,29 @@
 4. 代码中替换或更新了一些ffmpeg弃用的函数
 
 ## 4 编译
-### 4.1 安装Emscripten
-参考其[官方文档](https://emscripten.org/docs/getting_started/downloads.html)。
-### 4.2 下载FFmpeg
-```
-git clone https://git.ffmpeg.org/ffmpeg.git
-```
-### 4.3 下载本项目代码
+### 4.1 下载本项目代码
 保证FFmpeg目录和代码目录平级。
 ```
 git clone https://github.com/lawrencehj/WasmMediaPlayer.git
 ```
-### 4.4 编译
 代码中已包含编译好的wasm，如未对decoder.c进行修改且未对ffmpeg进行重新编译，可直接进入下一节《5. 测试》
+如果需要修改代码，需继续以下步骤
 
+### 4.2 安装Emscripten
+参考其[官方文档](https://emscripten.org/docs/getting_started/downloads.html)。
+
+### 4.3 修改并编译decoder.c
 如果修改过decoder.c，未重新编译ffmpeg，可在代码目录执行：
 ```
 ./build_decoder_wasm.sh
 ```
 
+### 4.3 重新配置并编译FFmpeg
+下载FFmpeg：
+```
+git clone https://git.ffmpeg.org/ffmpeg.git
+```
+这里默认是最新的4.3.1版，可切换到其它分支，有说法是新版本的FFmpeg解码速度不如某些旧版本，有兴趣不妨测试一下
 如需修改ffmpeg配置，则需修改build_decoder.sh，保存后执行：
 ```
 ./build_decoder.sh
@@ -57,7 +61,7 @@ http://localhost:8080
 ```
 
 ## 6 待优化问题
-1. 解码、播放H265时CPU占用相对较高
-2. 对于高码流实时流存在延时逐步加大的问题，拟采用Ring Buffer取代FIFO解决
+1. 解码、播放H265时CPU占用相对较高，某些H.265格式不支持（可用ffplay测试）
+2. 高码流实时流存在延时逐步加大，这里采用的办法是缓冲区大到一定程度就清空缓存，重新同步到最新码流
 3. 代码封装
-4. 支持播放不含音频的视频流
+4. 待支持播放不含音频的视频流
