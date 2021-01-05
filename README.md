@@ -21,11 +21,10 @@
 
 ## 4 编译
 ### 4.1 下载本项目代码
-保证FFmpeg目录和代码目录平级。
 ```
 git clone https://github.com/lawrencehj/WasmMediaPlayer.git
 ```
-代码中已包含编译好的wasm，如未对decoder.c进行修改且未对ffmpeg进行重新编译，可直接进入下一节《5. 测试》
+代码中已包含编译好的wasm，如未对decoder.c进行修改且未对ffmpeg进行重新编译，可直接进入下一节《5. 测试》。
 如果需要修改代码，需继续以下步骤
 
 ### 4.2 安装Emscripten
@@ -38,11 +37,11 @@ git clone https://github.com/lawrencehj/WasmMediaPlayer.git
 ```
 
 ### 4.3 重新配置并编译FFmpeg
-下载FFmpeg：
+下载FFmpeg，确保FFmpeg目录和代码目录平级：
 ```
 git clone https://git.ffmpeg.org/ffmpeg.git
 ```
-这里默认是最新的4.3.1版，可切换到其它分支，有说法是新版本的FFmpeg解码速度不如某些旧版本，有兴趣不妨测试一下
+这里默认是最新的4.3.1版，可切换到其它分支，有说法是新版本的FFmpeg解码速度不如某些旧版本，有兴趣不妨测试一下。
 如需修改ffmpeg配置，则需修改build_decoder.sh，保存后执行：
 ```
 ./build_decoder.sh
@@ -54,7 +53,7 @@ git clone https://git.ffmpeg.org/ffmpeg.git
 ```
 http-server -p 8080 .
 ```
-在浏览器输入即可：
+在浏览器输入以下地址：
 
 ```
 http://localhost:8080
