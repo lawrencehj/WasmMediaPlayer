@@ -1,7 +1,7 @@
 echo "Beginning Build:"
 rm -r dist
 mkdir -p dist
-cd ../ffmpeg
+cd ../FFmpeg
 echo "emconfigure"
 emconfigure ./configure --cc="emcc" --cxx="em++" --ar="emar" --ranlib="emranlib" --prefix=$(pwd)/../WasmMediaPlayer/dist --enable-cross-compile --target-os=none \
         --arch=x86_64 --cpu=generic --enable-gpl --enable-version3 --disable-avdevice --disable-swresample --disable-postproc --disable-avfilter --disable-swscale \

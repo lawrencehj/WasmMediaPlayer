@@ -17,7 +17,8 @@
 1. 增加对Websocket-FLV流的支持
 2. 增加对G.711A（PCM-ALAW）、G.711U（PCM-MULAW）、G.723.1、G.729音频编码格式的支持
 3. 增加对解码后的YUVJ420P图像格式支持
-4. 代码中替换或更新了一些ffmpeg弃用的函数
+4. 代码中替换或更新了一些新版FFmpeg弃用的函数
+5. 修改FFmpeg代码以支持H.265-flv封装流
 
 ## 4 编译
 ### 4.1 下载本项目代码
@@ -42,6 +43,9 @@ git clone https://github.com/lawrencehj/WasmMediaPlayer.git
 git clone https://git.ffmpeg.org/ffmpeg.git
 ```
 这里默认是最新的4.3.1版，可切换到其它分支，有说法是新版本的FFmpeg解码速度不如某些旧版本，有兴趣不妨测试一下。
+
+将本项目代码中的FFmpeg/libavformat/中的几个文件替换FFmpeg里的对应文件（根据2021年1月6日最新代码修改，如果版本不同可参照所提供文件的注释自行修改）
+
 如需修改ffmpeg配置，则需修改build_decoder.sh，保存后执行：
 ```
 ./build_decoder.sh

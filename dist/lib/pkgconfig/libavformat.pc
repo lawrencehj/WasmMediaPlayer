@@ -1,11 +1,11 @@
-prefix=/home/lawrence/git_projects/ffmpeg/../WasmMediaPlayer/dist
+prefix=/home/lawrence/git_projects/FFmpeg/../WasmMediaPlayer/dist
 exec_prefix=${prefix}
-libdir=/home/lawrence/git_projects/ffmpeg/../WasmMediaPlayer/dist/lib
-includedir=/home/lawrence/git_projects/ffmpeg/../WasmMediaPlayer/dist/include
+libdir=/home/lawrence/git_projects/FFmpeg/../WasmMediaPlayer/dist/lib
+includedir=/home/lawrence/git_projects/FFmpeg/../WasmMediaPlayer/dist/include
 
 Name: libavformat
 Description: FFmpeg container format library
-Version: 58.65.100
+Version: 58.65.101
 Requires: libavcodec >= 58.115.102, libavutil >= 56.63.100
 Requires.private: 
 Conflicts:
